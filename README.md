@@ -66,7 +66,7 @@ services:
 ```
 * Then create **.env** file with version, license & GPU usage info:
 ```.env
-VERSION=v3.0.1
+VERSION=v3.0.2
 LICENSE=...
 CUDA_VISIBLE_DEVICES=...
 ```
@@ -638,7 +638,7 @@ If you want to customize hostnames, make your own images for both
 For instance:
 
 ```dockerfile
-FROM dbrainbinaries/docr:v3.0.1
+FROM dbrainbinaries/docr:v3.0.2
 
 RUN sed -i 's/fieldnet:8080/custom-name:8080/g' configs/client.yml
 ```
@@ -649,7 +649,7 @@ You can find all default hostnames in **configs/client.yml** file in default ima
 
 For example:
 ```bash
-$ docker run --rm --entrypoint="" -t dbrainbinaries/docr:v3.0.1 cat configs/client.yml | awk '/http:/{print $2}' 
+$ docker run --rm --entrypoint="" -t dbrainbinaries/docr:v3.0.2 cat configs/client.yml | awk '/http:/{print $2}' 
 
 http://multidocnet:8080
 http://classifier:8080
