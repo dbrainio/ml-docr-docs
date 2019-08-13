@@ -693,7 +693,7 @@ Contact us if you want to get API token.
 * **inn_person**
 * insurance_plastic
 * military_id
-* ndfl2
+* **ndfl2**
 * not_document
 * ogrn
 * ogrnip
@@ -715,6 +715,7 @@ Contact us if you want to get API token.
 * **snils_front**
 * **vehicle_registration_certificate_back**
 * **vehicle_registration_certificate_front**
+* **uzb_passport_main**
 
 Only bolded types are supported for recognition.
 
@@ -814,3 +815,29 @@ Field names depending on doc type:
    * street
    * surname
    * third_name
+* ndfl2
+   * agent
+   * agent_inn
+   * bottom
+   * date_of_birth
+   * doc_date
+   * middle
+   * name
+   * other_name
+   * ru_inn
+   * surname
+   * top_left_table
+   * top_right_table
+* uzb_passport_main
+   * authority
+   * date_of_birth
+   * date_of_expiry
+   * date_of_issue
+   * gender
+   * mrz_1
+   * mrz_2
+   * name
+   * nation
+   * number
+   * place_of_birth
+   * surname
