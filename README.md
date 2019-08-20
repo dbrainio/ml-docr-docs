@@ -1,9 +1,44 @@
+### Cloud API version
+
+Cloud version is available using following URIs:
+* https://classification.v3-0-3.dbrain.io
+* https://recognition.v3-0-3.dbrain.io
+
+The only difference in usage of cloud version vs docker image version is that
+you have to add authorization header to each request. Like this:
+```bash
+curl -siX "POST" "https://classification.v3-0-3.dbrain.io/predict" \
+-H 'Authorization: Token <API_TOKEN>' \
+-H 'Content-Type: multipart/form-data; charset=utf-8' \
+-H 'Accept: multipart/form-data' \
+-F "image=@document.jpg"
+```
+
+[Contact us](https://docr.dbrain.io/) if you want to get API token.
+
+---
+
 ### Installation
 
 * Create **docker-compose.yml** file first:
 ```yamlex
 version: "3"
 services:
+  web:
+    image: dbrainbinaries/docr:$VERSION
+    environment:
+      SERVICE: web
+      USERNAME: admin
+      PASSWORD: Some_Passw0rd
+      CLASSIFICATION: http://classification:8080
+      RECOGNITION: http://recognition:8080
+      DATA: /data
+    depends_on:
+      - classification
+      - recognition
+    ports:
+      - ${WEB_PORT:-8080}:8080
+
   classification:
     image: dbrainbinaries/docr:$VERSION
     environment:
@@ -66,7 +101,7 @@ services:
 ```
 * Then create **.env** file with version, license & GPU usage info:
 ```.env
-VERSION=v3.0.2
+VERSION=v3.0.3
 LICENSE=...
 CUDA_VISIBLE_DEVICES=...
 ```
@@ -83,7 +118,8 @@ $  docker-compose up -d --force-recreate --build
 ### Services
 
 There are few types of services:
-
+* **web**
+  * optional web-demo
 * **recognition**
   * main recognition endpoint
   * requires ~0.5Gb RAM
@@ -638,7 +674,7 @@ If you want to customize hostnames, make your own images for both
 For instance:
 
 ```dockerfile
-FROM dbrainbinaries/docr:v3.0.2
+FROM dbrainbinaries/docr:v3.0.3
 
 RUN sed -i 's/fieldnet:8080/custom-name:8080/g' configs/client.yml
 ```
@@ -649,7 +685,7 @@ You can find all default hostnames in **configs/client.yml** file in default ima
 
 For example:
 ```bash
-$ docker run --rm --entrypoint="" -t dbrainbinaries/docr:v3.0.2 cat configs/client.yml | awk '/http:/{print $2}' 
+$ docker run --rm --entrypoint="" -t dbrainbinaries/docr:v3.0.3 cat configs/client.yml | awk '/http:/{print $2}' 
 
 http://multidocnet:8080
 http://classifier:8080
@@ -657,26 +693,6 @@ http://fieldnet:8080
 http://ocr:8080
 http://heuristics:8080
 ```
-
----
-
-### Cloud version
-
-Cloud version is available using following URIs:
-* https://classification.v3.dbrain.io
-* https://recognition.v3.dbrain.io
-
-The only difference in usage of cloud version vs docker image version is that
-you have to add authorization header to each request. Like this:
-```bash
-curl -siX "POST" "https://classification.v3.dbrain.io/predict" \
--H 'Authorization: Token <API_TOKEN>' \
--H 'Content-Type: multipart/form-data; charset=utf-8' \
--H 'Accept: multipart/form-data' \
--F "image=@document.jpg"
-```
-
-Contact us if you want to get API token.
 
 ---
 
