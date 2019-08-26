@@ -777,6 +777,19 @@ If task was found & done, response is like regular response of sync version.
         <tr><td>surname</td></tr>
         <tr><td>top_left_table</td></tr>
         <tr><td>top_right_table</td></tr>
+    <tr><td rowspan=13>kgz_passport_main</td><td>date_of_birth</td></tr>
+        <tr><td>date_of_expiry</td></tr>
+        <tr><td>date_of_issue</td></tr>
+        <tr><td>issuer</td></tr>
+        <tr><td>mrz_1</td></tr>
+        <tr><td>mrz_2</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>nation</td></tr>
+        <tr><td>passport_num</td></tr>
+        <tr><td>personal_number</td></tr>
+        <tr><td>place_of_birth</td></tr>
+        <tr><td>sex</td></tr>
+        <tr><td>surname</td></tr>
     <tr><td rowspan=21>passport_main</td><td>date_of_birth</td></tr>
         <tr><td>date_of_issue</td></tr>
         <tr><td>first_name</td></tr>
@@ -798,6 +811,16 @@ If task was found & done, response is like regular response of sync version.
         <tr><td>mrz_other_name</td></tr>
         <tr><td>mrz_sex</td></tr>
         <tr><td>mrz_surname</td></tr>
+    <tr><td rowspan=10>tjk_passport_main</td><td>date_of_birth</td></tr>
+        <tr><td>date_of_expiry</td></tr>
+        <tr><td>date_of_issue</td></tr>
+        <tr><td>mrz_1</td></tr>
+        <tr><td>mrz_2</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>nation</td></tr>
+        <tr><td>number</td></tr>
+        <tr><td>sex</td></tr>
+        <tr><td>surname</td></tr>
     <tr><td rowspan=12>snils_front</td><td>day_of_birth</td></tr>
         <tr><td>day_of_issue</td></tr>
         <tr><td>month_of_birth</td></tr>
@@ -870,12 +893,15 @@ If task was found & done, response is like regular response of sync version.
     <tr><td>other</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>passport_blank_page</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>passport_children</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>kgz_passport_plastic</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>passport_last_rf</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>passport_main_handwritten</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>passport_marriage</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>passport_military</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>passport_previous_docs</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>passport_registration</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>tjk_passport_other</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_uzbek_main_page</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>passport_zero_page</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>pts_back</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>pts_front</td><td style="color: lightgrey;">not supported</td></tr>
