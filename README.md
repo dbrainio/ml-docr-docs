@@ -126,6 +126,7 @@ services:
       LICENSE: $LICENSE
       CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: classifier
+      BATCH_SIZE: $BATCH_SIZE
 
   multidocnet:
     image: dbrainbinaries/docr:$VERSION
@@ -133,6 +134,7 @@ services:
       LICENSE: $LICENSE
       CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: multidocnet
+      BATCH_SIZE: $BATCH_SIZE
 
   heuristics:
     image: dbrainbinaries/docr:$VERSION
@@ -146,6 +148,7 @@ services:
       LICENSE: $LICENSE
       CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: ocr
+      BATCH_SIZE: $BATCH_SIZE
 
   fieldnet:
     image: dbrainbinaries/docr:$VERSION
@@ -153,12 +156,21 @@ services:
       LICENSE: $LICENSE
       CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: fieldnet
+      BATCH_SIZE: $BATCH_SIZE
+
+  crop_classifier:
+    image: dbrainbinaries/docr:$VERSION
+    environment:
+      LICENSE: $LICENSE
+      CUDA_VISIBLE_DEVICES: ""
+      SERVICE: crop_classifier
 ```
 * Then create **.env** file with version, license & GPU usage info:
 ```.env
 VERSION=latest
 LICENSE=...
 CUDA_VISIBLE_DEVICES=...
+BATCH_SIZE=1
 
 CLASSIFICATION_HOST=http://classification:8080
 RECOGNITION_HOST=http://recognition:8080
@@ -167,6 +179,7 @@ CLASSIFIER_HOST=http://classifier:8080
 FIELDNET_HOST=http://fieldnet:8080
 OCR_HOST=http://ocr:8080
 HEURISTICS_HOST=http://heuristics:8080
+CROP_CLASSIFIER_HOST=http://crop_classifier:8080
 ```
 * Possible values for VERSION variable: https://hub.docker.com/r/dbrainbinaries/docr/tags
 * If want to run on CPU, leave CUDA_VISIBLE_DEVICES blank
