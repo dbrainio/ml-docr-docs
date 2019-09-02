@@ -174,7 +174,7 @@ services:
 VERSION=latest
 LICENSE=...
 CUDA_VISIBLE_DEVICES=...
-BATCH_SIZE=1
+BATCH_SIZE=4
 
 CLASSIFICATION_HOST=http://classification:8080
 RECOGNITION_HOST=http://recognition:8080
