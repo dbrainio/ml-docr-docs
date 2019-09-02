@@ -67,6 +67,16 @@ curl -siX "POST" "https://classification.latest.dbrain.io/predict" \
 ```yamlex
 version: "3"
 services:
+  api:
+    image: dbrainbinaries/docr:$VERSION
+    depends_on:
+      - classification
+      - recognition
+    entrypoint: haproxy -f /etc/haproxy/haproxy.cfg -d
+    ports:
+      - ${CLF_PORT:-23000}:8080
+      - ${REC_PORT:-23001}:8081
+      
   web:
     image: dbrainbinaries/docr:$VERSION
     environment:
@@ -100,8 +110,6 @@ services:
       - multidocnet
       - ocr
       - heuristics
-    ports:
-      - ${CLF_PORT:-23000}:8080
 
   recognition:
     image: dbrainbinaries/docr:$VERSION
@@ -119,8 +127,6 @@ services:
       - ocr
       - heuristics
       - fieldnet
-    ports:
-      - ${REC_PORT:-23001}:8080
 
   classifier:
     image: dbrainbinaries/docr:$VERSION
@@ -192,12 +198,14 @@ CROP_CLASSIFIER_HOST=http://crop_classifier:8080
 ```bash
 $  docker-compose up -d \
     --force-recreate --build \
-    --scale classifier=1 \
-    --scale multidocnet=1 \
-    --scale heuristics=1 \
-    --scale ocr=1 \
+    --scale classifier=2 \
+    --scale multidocnet=2 \
+    --scale heuristics=4 \
+    --scale ocr=2 \
     --scale fieldnet=1 \
-    --scale crop_classifier=1
+    --scale crop_classifier=1 \
+    --scale classification=1 \
+    --scale recognition=8
 ```
 
 ---
