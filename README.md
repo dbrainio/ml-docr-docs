@@ -326,21 +326,16 @@ Content-Length: 344397
 Date: Thu, 01 Aug 2019 08:26:26 GMT
 Server: Python/3.6 aiohttp/3.5.4
 
-{
-    "items": [
-        [
-            {
-                "crop": "data:image/jpg;base64,...",
-                "document": {
-                    "type": "passport_main",
-                    "rotation": 1
-                }
-            },
-            ... next documents ...
-        ],
-        ... next pages (could be greater 1 in case of PDF) ...
-    ]
-}
+[
+	{
+		"crop": "data:image/jpg;base64,...",
+		"document": {
+			"type": "passport_main",
+			"rotation": 1
+		}
+	},
+	...
+]
 ```
 
 * Unicode characters in JSON are encoded as UTF-8
@@ -450,53 +445,49 @@ Date: Thu, 01 Aug 2019 08:49:02 GMT
 Server: Python/3.6 aiohttp/3.5.4
 
 {
-    "items": [
-        {
-            "doc_type": "passport_main",
-            "fields": {
-                "date_of_birth": {
-                    "text": "18.03.1994",
-                    "confidence": 0.7444975972175598
-                },
-                "date_of_issue": {
-                    "text": "14.01.2015",
-                    "confidence": 0.803318202495575
-                },
-                "first_name": {
-                    "text": "В***",
-                    "confidence": 0.9858060479164124
-                },
-                "issuing_authority": {
-                    "text": "ОТДЕЛОМ ***",
-                    "confidence": 0.9618613123893738
-                },
-                "other_names": {
-                    "text": "Е***",
-                    "confidence": 0.9819983243942261
-                },
-                "place_of_birth": {
-                    "text": "УСТЬ-ТАРКСКОГО ***",
-                    "confidence": 0.0
-                },
-                "series_and_number": {
-                    "text": "5*** 408***",
-                    "confidence": 0.9477028846740723
-                },
-                "sex": {
-                    "text": "МУЖ.",
-                    "confidence": 0.6627146005630493
-                },
-                "subdivision_code": {
-                    "text": "550-***",
-                    "confidence": 0.9262792468070984
-                },
-                "surname": {
-                    "text": "П***",
-                    "confidence": 0.9620369076728821
-                }
-            }
-        }
-    ]
+	"doc_type": "passport_main",
+	"fields": {
+		"date_of_birth": {
+			"text": "18.03.1994",
+			"confidence": 0.7444975972175598
+		},
+		"date_of_issue": {
+			"text": "14.01.2015",
+			"confidence": 0.803318202495575
+		},
+		"first_name": {
+			"text": "В***",
+			"confidence": 0.9858060479164124
+		},
+		"issuing_authority": {
+			"text": "ОТДЕЛОМ ***",
+			"confidence": 0.9618613123893738
+		},
+		"other_names": {
+			"text": "Е***",
+			"confidence": 0.9819983243942261
+		},
+		"place_of_birth": {
+			"text": "УСТЬ-ТАРКСКОГО ***",
+			"confidence": 0.0
+		},
+		"series_and_number": {
+			"text": "5*** 408***",
+			"confidence": 0.9477028846740723
+		},
+		"sex": {
+			"text": "МУЖ.",
+			"confidence": 0.6627146005630493
+		},
+		"subdivision_code": {
+			"text": "550-***",
+			"confidence": 0.9262792468070984
+		},
+		"surname": {
+			"text": "П***",
+			"confidence": 0.9620369076728821
+		}
+	}
 }
 ```
 
@@ -614,53 +605,49 @@ Date: Thu, 01 Aug 2019 08:49:02 GMT
 Server: Python/3.6 aiohttp/3.5.4
 
 {
-    "items": [
-        {
-            "doc_type": "passport_main",
-            "fields": {
-                "date_of_birth": {
-                    "text": "18.03.1994",
-                    "confidence": 0.7444975972175598
-                },
-                "date_of_issue": {
-                    "text": "14.01.2015",
-                    "confidence": 0.803318202495575
-                },
-                "first_name": {
-                    "text": "В***",
-                    "confidence": 0.9858060479164124
-                },
-                "issuing_authority": {
-                    "text": "ОТДЕЛОМ ***",
-                    "confidence": 0.9618613123893738
-                },
-                "other_names": {
-                    "text": "Е***",
-                    "confidence": 0.9819983243942261
-                },
-                "place_of_birth": {
-                    "text": "УСТЬ-ТАРКСКОГО ***",
-                    "confidence": 0.0
-                },
-                "series_and_number": {
-                    "text": "5*** 408***",
-                    "confidence": 0.9477028846740723
-                },
-                "sex": {
-                    "text": "МУЖ.",
-                    "confidence": 0.6627146005630493
-                },
-                "subdivision_code": {
-                    "text": "550-***",
-                    "confidence": 0.9262792468070984
-                },
-                "surname": {
-                    "text": "П***",
-                    "confidence": 0.9620369076728821
-                }
-            }
-        }
-    ]
+	"doc_type": "passport_main",
+	"fields": {
+		"date_of_birth": {
+			"text": "18.03.1994",
+			"confidence": 0.7444975972175598
+		},
+		"date_of_issue": {
+			"text": "14.01.2015",
+			"confidence": 0.803318202495575
+		},
+		"first_name": {
+			"text": "В***",
+			"confidence": 0.9858060479164124
+		},
+		"issuing_authority": {
+			"text": "ОТДЕЛОМ ***",
+			"confidence": 0.9618613123893738
+		},
+		"other_names": {
+			"text": "Е***",
+			"confidence": 0.9819983243942261
+		},
+		"place_of_birth": {
+			"text": "УСТЬ-ТАРКСКОГО ***",
+			"confidence": 0.0
+		},
+		"series_and_number": {
+			"text": "5*** 408***",
+			"confidence": 0.9477028846740723
+		},
+		"sex": {
+			"text": "МУЖ.",
+			"confidence": 0.6627146005630493
+		},
+		"subdivision_code": {
+			"text": "550-***",
+			"confidence": 0.9262792468070984
+		},
+		"surname": {
+			"text": "П***",
+			"confidence": 0.9620369076728821
+		}
+	}
 }
 ```
 
