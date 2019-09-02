@@ -94,6 +94,7 @@ services:
       FIELDNET_HOST: "$FIELDNET_HOST"
       OCR_HOST: "$OCR_HOST"
       HEURISTICS_HOST: "$HEURISTICS_HOST"
+      BATCH_SIZE: 1
     depends_on:
       - classifier
       - multidocnet
@@ -112,6 +113,7 @@ services:
       FIELDNET_HOST: "$FIELDNET_HOST"
       OCR_HOST: "$OCR_HOST"
       HEURISTICS_HOST: "$HEURISTICS_HOST"
+      BATCH_SIZE: 1
     depends_on:
       - multidocnet
       - ocr
@@ -141,6 +143,7 @@ services:
     environment:
       LICENSE: $LICENSE
       SERVICE: heuristics
+      BATCH_SIZE: 1
 
   ocr:
     image: dbrainbinaries/docr:$VERSION
@@ -164,6 +167,7 @@ services:
       LICENSE: $LICENSE
       CUDA_VISIBLE_DEVICES: ""
       SERVICE: crop_classifier
+      BATCH_SIZE: 1
 ```
 * Then create **.env** file with version, license & GPU usage info:
 ```.env
@@ -186,7 +190,14 @@ CROP_CLASSIFIER_HOST=http://crop_classifier:8080
 * If want to run on GPU, try CUDA_VISIBLE_DEVICES=0 for example
 * Then run services like this:
 ```bash
-$  docker-compose up -d --force-recreate --build 
+$  docker-compose up -d \
+    --force-recreate --build \
+    --scale classifier=1 \
+    --scale multidocnet=1 \
+    --scale heuristics=1 \
+    --scale ocr=1 \
+    --scale fieldnet=1 \
+    --scale crop_classifier=1
 ```
 
 ---
