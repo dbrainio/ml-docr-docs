@@ -72,10 +72,12 @@ services:
     depends_on:
       - classification
       - recognition
+      - web
     entrypoint: haproxy -f /etc/haproxy/haproxy.cfg -d
     ports:
-      - ${CLF_PORT:-23000}:8080
-      - ${REC_PORT:-23001}:8081
+      - ${CLF_PORT:-8080}:8080
+      - ${REC_PORT:-8081}:8081
+      - ${WEB_PORT:-8082}:8082
       
   web:
     image: dbrainbinaries/docr:$VERSION
@@ -91,8 +93,6 @@ services:
     depends_on:
       - classification
       - recognition
-    ports:
-      - ${WEB_PORT:-8080}:8080
 
   classification:
     image: dbrainbinaries/docr:$VERSION
