@@ -1,13 +1,57 @@
+### Table of Contents
+1. [Versioning](#versioning)
+1. [Documentation](#documentation)
+1. [Cloud API version](#cloud-api-version)
+1. [Installation](#installation)
+1. [Services](#services)
+1. [Healthcheck](#healthcheck)
+1. [Classification](#classification)
+1. [Recognition](#recognition)
+1. [Classification + Recognition](#classification--recognition)
+1. [Async version](#async-version)
+1. [Document types & fields](#document-types--fields)
+
+---
+
+### Versioning
+
+Versioning system is quite simple:
+* Cloud API & Docker flavors of our product provide identical services for 
+identical versions.
+* Stable versions are labeled like this: v**X**.**Y**.**Z**, where **X** is 
+major version, **Y** is minor version and **Z** is hotfix/enhacement version.
+* Also there is special **latest** version - it can be very unstable, but 
+includes all fresh enhancements & bugfixes. This version is halfway from one 
+stable version to next stable one.
+
+The most reasonable approach is to use any stable version of product, 
+periodically making migration to newer versions.
+
+But if you want to get full power of our solutions just try **latest** version. 
+
+---
+
+### Documentation
+
+List of docs for stable versions + latest version:
+* [latest](https://github.com/dbrainio/ml-docr-docs/tree/latest)
+* [v3.0.4](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.4)
+* [v3.0.2](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.2)
+* [v3.0.1](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.1)
+* [v3.0.0](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.0)
+
+---
+
 ### Cloud API version
 
 Cloud version is available using following URIs:
-* https://classification.v3-0-3.dbrain.io
-* https://recognition.v3-0-3.dbrain.io
+* https://classification.v3-0-4.dbrain.io
+* https://recognition.v3-0-4.dbrain.io
 
 The only difference in usage of cloud version vs docker image version is that
 you have to add authorization header to each request. Like this:
 ```bash
-curl -siX "POST" "https://classification.v3-0-3.dbrain.io/predict" \
+curl -siX "POST" "https://classification.v3-0-4.dbrain.io/predict" \
 -H 'Authorization: Token <API_TOKEN>' \
 -H 'Content-Type: multipart/form-data; charset=utf-8' \
 -H 'Accept: multipart/form-data' \
@@ -24,93 +68,145 @@ curl -siX "POST" "https://classification.v3-0-3.dbrain.io/predict" \
 ```yamlex
 version: "3"
 services:
+  api:
+    image: dbrainbinaries/docr:$VERSION
+    depends_on:
+      - classification
+      - recognition
+      - web
+    entrypoint: haproxy -f /etc/haproxy/haproxy.cfg -d
+    ports:
+      - ${CLF_PORT:-8080}:8080
+      - ${REC_PORT:-8081}:8081
+      - ${WEB_PORT:-8082}:8082
+      
   web:
     image: dbrainbinaries/docr:$VERSION
     environment:
       SERVICE: web
       USERNAME: admin
       PASSWORD: Some_Passw0rd
-      CLASSIFICATION: http://classification:8080
-      RECOGNITION: http://recognition:8080
+      CLASSIFICATION_HOST: "$CLASSIFICATION_HOST"
+      CLASSIFICATION_PASSPHRASE:
+      RECOGNITION_HOST: "$RECOGNITION_HOST"
+      RECOGNITION_PASSPHRASE:
       DATA: /data
     depends_on:
       - classification
       - recognition
-    ports:
-      - ${WEB_PORT:-8080}:8080
 
   classification:
     image: dbrainbinaries/docr:$VERSION
     environment:
       LICENSE: $LICENSE
       SERVICE: classification
+      MULTIDOCNET_HOST: "$MULTIDOCNET_HOST"
+      CLASSIFIER_HOST: "$CLASSIFIER_HOST"
+      FIELDNET_HOST: "$FIELDNET_HOST"
+      OCR_HOST: "$OCR_HOST"
+      HEURISTICS_HOST: "$HEURISTICS_HOST"
+      BATCH_SIZE: 1
     depends_on:
       - classifier
       - multidocnet
       - ocr
       - heuristics
-    ports:
-      - ${CLF_PORT:-23000}:8080
 
   recognition:
     image: dbrainbinaries/docr:$VERSION
     environment:
       LICENSE: $LICENSE
       SERVICE: recognition
+      MULTIDOCNET_HOST: "$MULTIDOCNET_HOST"
+      CLASSIFIER_HOST: "$CLASSIFIER_HOST"
+      FIELDNET_HOST: "$FIELDNET_HOST"
+      OCR_HOST: "$OCR_HOST"
+      HEURISTICS_HOST: "$HEURISTICS_HOST"
+      BATCH_SIZE: 1
     depends_on:
       - multidocnet
       - ocr
       - heuristics
       - fieldnet
-    ports:
-      - ${REC_PORT:-23001}:8080
 
   classifier:
     image: dbrainbinaries/docr:$VERSION
     environment:
       LICENSE: $LICENSE
-      CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES}
+      CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: classifier
+      BATCH_SIZE: $BATCH_SIZE
 
   multidocnet:
     image: dbrainbinaries/docr:$VERSION
     environment:
       LICENSE: $LICENSE
-      CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES}
+      CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: multidocnet
+      BATCH_SIZE: $BATCH_SIZE
 
   heuristics:
     image: dbrainbinaries/docr:$VERSION
     environment:
       LICENSE: $LICENSE
       SERVICE: heuristics
+      BATCH_SIZE: 1
 
   ocr:
     image: dbrainbinaries/docr:$VERSION
     environment:
       LICENSE: $LICENSE
-      CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES}
+      CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: ocr
+      BATCH_SIZE: $BATCH_SIZE
 
   fieldnet:
     image: dbrainbinaries/docr:$VERSION
     environment:
       LICENSE: $LICENSE
-      CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES}
+      CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: fieldnet
+      BATCH_SIZE: $BATCH_SIZE
+
+  crop_classifier:
+    image: dbrainbinaries/docr:$VERSION
+    environment:
+      LICENSE: $LICENSE
+      CUDA_VISIBLE_DEVICES: ""
+      SERVICE: crop_classifier
+      BATCH_SIZE: 1
 ```
 * Then create **.env** file with version, license & GPU usage info:
 ```.env
-VERSION=v3.0.3
+VERSION=v3.0.4
 LICENSE=...
 CUDA_VISIBLE_DEVICES=...
+BATCH_SIZE=4
+
+CLASSIFICATION_HOST=http://classification:8080
+RECOGNITION_HOST=http://recognition:8080
+MULTIDOCNET_HOST=http://multidocnet:8080
+CLASSIFIER_HOST=http://classifier:8080
+FIELDNET_HOST=http://fieldnet:8080
+OCR_HOST=http://ocr:8080
+HEURISTICS_HOST=http://heuristics:8080
+CROP_CLASSIFIER_HOST=http://crop_classifier:8080
 ```
 * Possible values for VERSION variable: https://hub.docker.com/r/dbrainbinaries/docr/tags
 * If want to run on CPU, leave CUDA_VISIBLE_DEVICES blank
 * If want to run on GPU, try CUDA_VISIBLE_DEVICES=0 for example
 * Then run services like this:
 ```bash
-$  docker-compose up -d --force-recreate --build 
+$  docker-compose up -d \
+    --force-recreate --build \
+    --scale classifier=2 \
+    --scale multidocnet=2 \
+    --scale heuristics=4 \
+    --scale ocr=2 \
+    --scale fieldnet=1 \
+    --scale crop_classifier=1 \
+    --scale classification=1 \
+    --scale recognition=8
 ```
 
 ---
@@ -231,21 +327,16 @@ Content-Length: 344397
 Date: Thu, 01 Aug 2019 08:26:26 GMT
 Server: Python/3.6 aiohttp/3.5.4
 
-{
-    "items": [
-        [
-            {
-                "crop": "data:image/jpg;base64,...",
-                "document": {
-                    "type": "passport_main",
-                    "rotation": 1
-                }
-            },
-            ... next documents ...
-        ],
-        ... next pages (could be greater 1 in case of PDF) ...
-    ]
-}
+[
+	{
+		"crop": "data:image/jpg;base64,...",
+		"document": {
+			"type": "passport_main",
+			"rotation": 1
+		}
+	},
+	...
+]
 ```
 
 * Unicode characters in JSON are encoded as UTF-8
@@ -355,53 +446,49 @@ Date: Thu, 01 Aug 2019 08:49:02 GMT
 Server: Python/3.6 aiohttp/3.5.4
 
 {
-    "items": [
-        {
-            "doc_type": "passport_main",
-            "fields": {
-                "date_of_birth": {
-                    "text": "18.03.1994",
-                    "confidence": 0.7444975972175598
-                },
-                "date_of_issue": {
-                    "text": "14.01.2015",
-                    "confidence": 0.803318202495575
-                },
-                "first_name": {
-                    "text": "В***",
-                    "confidence": 0.9858060479164124
-                },
-                "issuing_authority": {
-                    "text": "ОТДЕЛОМ ***",
-                    "confidence": 0.9618613123893738
-                },
-                "other_names": {
-                    "text": "Е***",
-                    "confidence": 0.9819983243942261
-                },
-                "place_of_birth": {
-                    "text": "УСТЬ-ТАРКСКОГО ***",
-                    "confidence": 0.0
-                },
-                "series_and_number": {
-                    "text": "5*** 408***",
-                    "confidence": 0.9477028846740723
-                },
-                "sex": {
-                    "text": "МУЖ.",
-                    "confidence": 0.6627146005630493
-                },
-                "subdivision_code": {
-                    "text": "550-***",
-                    "confidence": 0.9262792468070984
-                },
-                "surname": {
-                    "text": "П***",
-                    "confidence": 0.9620369076728821
-                }
-            }
-        }
-    ]
+	"doc_type": "passport_main",
+	"fields": {
+		"date_of_birth": {
+			"text": "18.03.1994",
+			"confidence": 0.7444975972175598
+		},
+		"date_of_issue": {
+			"text": "14.01.2015",
+			"confidence": 0.803318202495575
+		},
+		"first_name": {
+			"text": "В***",
+			"confidence": 0.9858060479164124
+		},
+		"issuing_authority": {
+			"text": "ОТДЕЛОМ ***",
+			"confidence": 0.9618613123893738
+		},
+		"other_names": {
+			"text": "Е***",
+			"confidence": 0.9819983243942261
+		},
+		"place_of_birth": {
+			"text": "УСТЬ-ТАРКСКОГО ***",
+			"confidence": 0.0
+		},
+		"series_and_number": {
+			"text": "5*** 408***",
+			"confidence": 0.9477028846740723
+		},
+		"sex": {
+			"text": "МУЖ.",
+			"confidence": 0.6627146005630493
+		},
+		"subdivision_code": {
+			"text": "550-***",
+			"confidence": 0.9262792468070984
+		},
+		"surname": {
+			"text": "П***",
+			"confidence": 0.9620369076728821
+		}
+	}
 }
 ```
 
@@ -519,53 +606,49 @@ Date: Thu, 01 Aug 2019 08:49:02 GMT
 Server: Python/3.6 aiohttp/3.5.4
 
 {
-    "items": [
-        {
-            "doc_type": "passport_main",
-            "fields": {
-                "date_of_birth": {
-                    "text": "18.03.1994",
-                    "confidence": 0.7444975972175598
-                },
-                "date_of_issue": {
-                    "text": "14.01.2015",
-                    "confidence": 0.803318202495575
-                },
-                "first_name": {
-                    "text": "В***",
-                    "confidence": 0.9858060479164124
-                },
-                "issuing_authority": {
-                    "text": "ОТДЕЛОМ ***",
-                    "confidence": 0.9618613123893738
-                },
-                "other_names": {
-                    "text": "Е***",
-                    "confidence": 0.9819983243942261
-                },
-                "place_of_birth": {
-                    "text": "УСТЬ-ТАРКСКОГО ***",
-                    "confidence": 0.0
-                },
-                "series_and_number": {
-                    "text": "5*** 408***",
-                    "confidence": 0.9477028846740723
-                },
-                "sex": {
-                    "text": "МУЖ.",
-                    "confidence": 0.6627146005630493
-                },
-                "subdivision_code": {
-                    "text": "550-***",
-                    "confidence": 0.9262792468070984
-                },
-                "surname": {
-                    "text": "П***",
-                    "confidence": 0.9620369076728821
-                }
-            }
-        }
-    ]
+	"doc_type": "passport_main",
+	"fields": {
+		"date_of_birth": {
+			"text": "18.03.1994",
+			"confidence": 0.7444975972175598
+		},
+		"date_of_issue": {
+			"text": "14.01.2015",
+			"confidence": 0.803318202495575
+		},
+		"first_name": {
+			"text": "В***",
+			"confidence": 0.9858060479164124
+		},
+		"issuing_authority": {
+			"text": "ОТДЕЛОМ ***",
+			"confidence": 0.9618613123893738
+		},
+		"other_names": {
+			"text": "Е***",
+			"confidence": 0.9819983243942261
+		},
+		"place_of_birth": {
+			"text": "УСТЬ-ТАРКСКОГО ***",
+			"confidence": 0.0
+		},
+		"series_and_number": {
+			"text": "5*** 408***",
+			"confidence": 0.9477028846740723
+		},
+		"sex": {
+			"text": "МУЖ.",
+			"confidence": 0.6627146005630493
+		},
+		"subdivision_code": {
+			"text": "550-***",
+			"confidence": 0.9262792468070984
+		},
+		"surname": {
+			"text": "П***",
+			"confidence": 0.9620369076728821
+		}
+	}
 }
 ```
 
@@ -665,195 +748,184 @@ If task was found & done, response is like regular response of sync version.
 
 ---
 
-### Custom services names
+### Document types & fields
 
-Main services are **classification** & **recognition**. Both use other services.
-If you want to customize hostnames, make your own images for both
-**classification** & **recognition** services with modified config.
- 
-For instance:
-
-```dockerfile
-FROM dbrainbinaries/docr:v3.0.3
-
-RUN sed -i 's/fieldnet:8080/custom-name:8080/g' configs/client.yml
-```
-
-Then build image and use it in docker-compose file instead of default one.
-
-You can find all default hostnames in **configs/client.yml** file in default image.
-
-For example:
-```bash
-$ docker run --rm --entrypoint="" -t dbrainbinaries/docr:v3.0.3 cat configs/client.yml | awk '/http:/{print $2}' 
-
-http://multidocnet:8080
-http://classifier:8080
-http://fieldnet:8080
-http://ocr:8080
-http://heuristics:8080
-```
-
----
-
-### Document types
-
-* **bank_card**
-* driver_license_card_back
-* **driver_license_card_front**
-* driver_license_plastic_back
-* **driver_license_plastic_new_front**
-* **driver_license_plastic_old_front**
-* global_passport
-* inn_organisation
-* **inn_person**
-* insurance_plastic
-* military_id
-* **ndfl2**
-* not_document
-* ogrn
-* ogrnip
-* other
-* passport_blank_page
-* passport_children
-* passport_last_rf
-* **passport_main**
-* passport_main_handwritten
-* passport_marriage
-* passport_military
-* passport_previous_docs
-* passport_registration
-* passport_zero_page
-* pts_back
-* pts_front
-* registration_certificate
-* snils_back
-* **snils_front**
-* **vehicle_registration_certificate_back**
-* **vehicle_registration_certificate_front**
-* **uzb_passport_main**
-
-Only bolded types are supported for recognition.
-
----
-
-### Fields for document types
-
-Field names depending on doc type:
-
-* bank_card
-   * name
-   * surname
-   * number
-   * month
-   * year
-* driver_license_card_front
-   * date_of_birth
-   * date_of_issue
-   * name
-   * series_number
-   * surname
-   * third_name
-   * valid_before
-* driver_license_plastic_new_front
-   * date_of_birth
-   * date_of_issue
-   * name
-   * series_number
-   * surname
-   * third_name
-   * valid_before
-* driver_license_plastic_old_front
-   * date_of_birth
-   * date_of_issue
-   * name
-   * series_number
-   * surname
-   * third_name
-   * valid_before
-* inn_person
-   * date
-   * fio
-   * inn
-   * issuer_number
-   * number
-   * series
-* passport_main
-   * date_of_birth
-   * date_of_issue
-   * first_name
-   * issuing_authority
-   * other_names
-   * place_of_birth
-   * series_and_number
-   * sex
-   * subdivision_code
-   * surname
-* snils_front
-   * day_of_birth
-   * month_of_birth
-   * name
-   * number
-   * place_of_birth
-   * sex
-   * surname
-   * third_name
-   * year_of_birth
-* vehicle_registration_certificate_front
-   * car_body
-   * chassis
-   * color
-   * engine_power
-   * mass
-   * max_mass
-   * model_eng
-   * model_rus
-   * number_top
-   * passport_number
-   * passport_series
-   * reg_number
-   * release_year
-   * series_top
-   * type
-   * vin
-* vehicle_registration_certificate_back
-   * country_code
-   * date_of_issue
-   * district
-   * issuing_authority
-   * name
-   * number_bottom
-   * number_top
-   * series_bottom
-   * series_top
-   * state_eng
-   * state_rus
-   * street
-   * surname
-   * third_name
-* ndfl2
-   * agent
-   * agent_inn
-   * bottom
-   * date_of_birth
-   * doc_date
-   * middle
-   * name
-   * other_name
-   * ru_inn
-   * surname
-   * top_left_table
-   * top_right_table
-* uzb_passport_main
-   * authority
-   * date_of_birth
-   * date_of_expiry
-   * date_of_issue
-   * gender
-   * mrz_1
-   * mrz_2
-   * name
-   * nation
-   * number
-   * place_of_birth
-   * surname
+<table>
+<thead><tr><th>Document type</th><th>Fields</th></tr></thead>
+<tbody>
+    <tr><td rowspan=5>bank_card</td><td>month</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>number</td></tr>
+        <tr><td>surname</td></tr>
+        <tr><td>year</td></tr>
+    <tr><td rowspan=7>driver_license_card_front</td><td>date_of_birth</td></tr>
+        <tr><td>date_of_issue</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>series_number</td></tr>
+        <tr><td>surname</td></tr>
+        <tr><td>third_name</td></tr>
+        <tr><td>valid_before</td></tr>
+    <tr><td rowspan=7>driver_license_plastic_new_front</td><td>date_of_birth</td></tr>
+        <tr><td>date_of_issue</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>series_number</td></tr>
+        <tr><td>surname</td></tr>
+        <tr><td>third_name</td></tr>
+        <tr><td>valid_before</td></tr>
+    <tr><td rowspan=7>driver_license_plastic_old_front</td><td>date_of_birth</td></tr>
+        <tr><td>date_of_issue</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>series_number</td></tr>
+        <tr><td>surname</td></tr>
+        <tr><td>third_name</td></tr>
+        <tr><td>valid_before</td></tr>
+    <tr><td rowspan=6>inn_person</td><td>date</td></tr>
+        <tr><td>fio</td></tr>
+        <tr><td>inn</td></tr>
+        <tr><td>issuer_number</td></tr>
+        <tr><td>number</td></tr>
+        <tr><td>series</td></tr>
+    <tr><td rowspan=12>ndfl2</td><td>agent</td></tr>
+        <tr><td>agent_inn</td></tr>
+        <tr><td>bottom</td></tr>
+        <tr><td>date_of_birth</td></tr>
+        <tr><td>doc_date</td></tr>
+        <tr><td>middle</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>other_name</td></tr>
+        <tr><td>ru_inn</td></tr>
+        <tr><td>surname</td></tr>
+        <tr><td>top_left_table</td></tr>
+        <tr><td>top_right_table</td></tr>
+    <tr><td rowspan=13>kgz_passport_main</td><td>date_of_birth</td></tr>
+        <tr><td>date_of_expiry</td></tr>
+        <tr><td>date_of_issue</td></tr>
+        <tr><td>issuer</td></tr>
+        <tr><td>mrz_1</td></tr>
+        <tr><td>mrz_2</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>nation</td></tr>
+        <tr><td>passport_num</td></tr>
+        <tr><td>personal_number</td></tr>
+        <tr><td>place_of_birth</td></tr>
+        <tr><td>sex</td></tr>
+        <tr><td>surname</td></tr>
+    <tr><td rowspan=21>passport_main</td><td>date_of_birth</td></tr>
+        <tr><td>date_of_issue</td></tr>
+        <tr><td>first_name</td></tr>
+        <tr><td>issuing_authority</td></tr>
+        <tr><td>other_names</td></tr>
+        <tr><td>place_of_birth</td></tr>
+        <tr><td>series_and_number</td></tr>
+        <tr><td>sex</td></tr>
+        <tr><td>subdivision_code</td></tr>
+        <tr><td>surname</td></tr>
+        <tr><td>mrz_checksum</td></tr>
+        <tr><td>mrz_code</td></tr>
+        <tr><td>mrz_country</td></tr>
+        <tr><td>mrz_date_of_birth</td></tr>
+        <tr><td>mrz_date_of_issue</td></tr>
+        <tr><td>mrz_name</td></tr>
+        <tr><td>mrz_nationality</td></tr>
+        <tr><td>mrz_number</td></tr>
+        <tr><td>mrz_other_name</td></tr>
+        <tr><td>mrz_sex</td></tr>
+        <tr><td>mrz_surname</td></tr>
+    <tr><td rowspan=10>tjk_passport_main</td><td>date_of_birth</td></tr>
+        <tr><td>date_of_expiry</td></tr>
+        <tr><td>date_of_issue</td></tr>
+        <tr><td>mrz_1</td></tr>
+        <tr><td>mrz_2</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>nation</td></tr>
+        <tr><td>number</td></tr>
+        <tr><td>sex</td></tr>
+        <tr><td>surname</td></tr>
+    <tr><td rowspan=12>snils_front</td><td>day_of_birth</td></tr>
+        <tr><td>day_of_issue</td></tr>
+        <tr><td>month_of_birth</td></tr>
+        <tr><td>month_of_issue</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>number</td></tr>
+        <tr><td>place_of_birth</td></tr>
+        <tr><td>sex</td></tr>
+        <tr><td>surname</td></tr>
+        <tr><td>third_name</td></tr>
+        <tr><td>year_of_birth</td></tr>
+        <tr><td>year_of_issue</td></tr>
+    <tr><td rowspan=10>uzb_passport_main</td><td>authority</td></tr>
+        <tr><td>date_of_birth</td></tr>
+        <tr><td>date_of_expiry</td></tr>
+        <tr><td>date_of_issue</td></tr>
+        <tr><td>gender</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>nation</td></tr>
+        <tr><td>number</td></tr>
+        <tr><td>place_of_birth</td></tr>
+        <tr><td>surname</td></tr>
+    <tr><td rowspan=18>vehicle_registration_certificate_back</td><td>building</td></tr>
+        <tr><td>building_number</td></tr>
+        <tr><td>city</td></tr>
+        <tr><td>country_code</td></tr>
+        <tr><td>date_of_issue</td></tr>
+        <tr><td>district</td></tr>
+        <tr><td>home</td></tr>
+        <tr><td>issuing_authority</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>number_bottom</td></tr>
+        <tr><td>number_top</td></tr>
+        <tr><td>series_bottom</td></tr>
+        <tr><td>series_top</td></tr>
+        <tr><td>state_eng</td></tr>
+        <tr><td>state_rus</td></tr>
+        <tr><td>street</td></tr>
+        <tr><td>surname</td></tr>
+        <tr><td>third_name</td></tr>
+    <tr><td rowspan=20>vehicle_registration_certificate_front</td><td>car_body</td></tr>
+        <tr><td>category</td></tr>
+        <tr><td>chassis</td></tr>
+        <tr><td>color</td></tr>
+        <tr><td>ecologic_class</td></tr>
+        <tr><td>engine_power</td></tr>
+        <tr><td>mass</td></tr>
+        <tr><td>max_mass</td></tr>
+        <tr><td>model_eng</td></tr>
+        <tr><td>model_rus</td></tr>
+        <tr><td>number_bottom</td></tr>
+        <tr><td>number_top</td></tr>
+        <tr><td>passport_number</td></tr>
+        <tr><td>passport_series</td></tr>
+        <tr><td>reg_number</td></tr>
+        <tr><td>release_year</td></tr>
+        <tr><td>series_bottom</td></tr>
+        <tr><td>series_top</td></tr>
+        <tr><td>type</td></tr>
+        <tr><td>vin</td></tr>
+    <tr><td>driver_license_card_back</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>driver_license_plastic_back</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>global_passport</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>inn_organisation</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>insurance_plastic</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>military_id</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>not_document</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>ogrn</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>ogrnip</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>other</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_blank_page</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_children</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>kgz_passport_plastic</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_last_rf</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_main_handwritten</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_marriage</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_military</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_previous_docs</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_registration</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>tjk_passport_other</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_uzbek_main_page</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_zero_page</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>pts_back</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>pts_front</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>registration_certificate</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>snils_back</td><td style="color: lightgrey;">not supported</td></tr>
+</tbody>
+</table>
