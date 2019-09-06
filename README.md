@@ -36,7 +36,7 @@ But if you want to get full power of our solutions just try **latest** version.
 List of docs for stable versions + latest version:
 * [latest](https://github.com/dbrainio/ml-docr-docs/tree/latest)
 * [v3.0.4](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.4)
-* [v3.0.3](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.4)
+* [v3.0.3](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.3)
 * [v3.0.2](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.2)
 * [v3.0.1](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.1)
 * [v3.0.0](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.0)
