@@ -248,7 +248,8 @@ Note, all of these requirements are peak values, not average ones.
 * Each service has following healthcheck endpoint:
 
 ```bash
-$ curl -si 'http://127.0.0.1:23000/healthcheck'
+$ curl -si 'http://127.0.0.1:8080/healthcheck'
+$ curl -si 'http://127.0.0.1:8081/healthcheck'
 ```
 
 * If **OK**:
@@ -269,7 +270,7 @@ Server: Python/3.6 aiohttp/3.5.4
 
 ```bash
 $ curl -siX 'POST' \
-    'http://127.0.0.1:23000/predict' \
+    'http://127.0.0.1:8080/predict' \
     -H 'Content-Type: multipart/form-data; charset=utf-8' \
     -H 'Accept: multipart/form-data' \
     -F 'image=@document.jpg'
@@ -313,7 +314,7 @@ Content-Length: 15
 
 ```bash
 $ curl -siX 'POST' \
-    'http://127.0.0.1:23000/predict' \
+    'http://127.0.0.1:8080/predict' \
     -H 'Content-Type: multipart/form-data; charset=utf-8' \
     -H 'Accept: application/json' \
     -F 'image=@document.jpg'
@@ -350,7 +351,7 @@ Server: Python/3.6 aiohttp/3.5.4
 
 ```bash
 $ curl -siX 'POST' \
-    'http://127.0.0.1:23001/predict' \
+    'http://127.0.0.1:8081/predict' \
     -H 'Content-Type: multipart/form-data; charset=utf-8' \
     -H 'Accept: multipart/form-data' \
     -F 'image=@cropped_document_image_from_classification_step.jpg' \
@@ -430,7 +431,7 @@ Content-Length: 1254
 
 ```bash
 $ curl -siX 'POST' \
-    'http://127.0.0.1:23001/predict' \
+    'http://127.0.0.1:8081/predict' \
     -H 'Content-Type: multipart/form-data; charset=utf-8' \
     -H 'Accept: application/json' \
     -F 'image=@cropped_document_image_from_classification_step.jpg' \
@@ -510,7 +511,7 @@ If you want to classify & recognize documents on image in single request, read t
 
 ```bash
 $ curl -siX 'POST' \
-    'http://127.0.0.1:23001/predict/classify/recognize' \
+    'http://127.0.0.1:8081/predict/classify/recognize' \
     -H 'Content-Type: multipart/form-data; charset=utf-8' \
     -H 'Accept: multipart/form-data' \
     -F 'image=@document.jpg' \
@@ -590,7 +591,7 @@ Content-Length: 1254
 
 ```bash
 $ curl -siX 'POST' \
-    'http://127.0.0.1:23001/predict/classify/recognize' \
+    'http://127.0.0.1:8081/predict/classify/recognize' \
     -H 'Content-Type: multipart/form-data; charset=utf-8' \
     -H 'Accept: application/json' \
     -F 'image=@document.jpg' \
@@ -667,7 +668,7 @@ Server: Python/3.6 aiohttp/3.5.4
 * Run this for **classification**:
 ```bash
 $ curl -siX 'POST' \
-    'http://127.0.0.1:23000/predict?async=true' \
+    'http://127.0.0.1:8080/predict?async=true' \
     -H 'Content-Type: multipart/form-data; charset=utf-8' \
     -H 'Accept: (application/json OR multipart/form-data)' \
     -F 'image=@document.jpg'
@@ -675,7 +676,7 @@ $ curl -siX 'POST' \
 * Run this for **recognition**:
 ```bash
 $ curl -siX 'POST' \
-    'http://127.0.0.1:23001/predict?async=true' \
+    'http://127.0.0.1:8081/predict?async=true' \
     -H 'Content-Type: multipart/form-data; charset=utf-8' \
     -H 'Accept: (application/json OR multipart/form-data)' \
     -F 'image=@document.jpg'
@@ -684,7 +685,7 @@ $ curl -siX 'POST' \
 * Run this for **classification + recognition**:
 ```bash
 $ curl -siX 'POST' \
-    'http://127.0.0.1:23001/predict/classify/recognize?async=true' \
+    'http://127.0.0.1:8081/predict/classify/recognize?async=true' \
     -H 'Content-Type: multipart/form-data; charset=utf-8' \
     -H 'Accept: (application/json OR multipart/form-data)' \
     -F 'image=@document.jpg'
@@ -708,7 +709,7 @@ Server: Python/3.6 aiohttp/4.0.0a0
 * To check result run this:
 ```bash
 $ curl -si -H 'Accept: (application/json OR multipart/form-data)'\
-    'http://127.0.0.1:(23000 OR 23001)/result/e95064c3-a5e6-43a5-9fe9-34f54e8de6cc'
+    'http://127.0.0.1:(8080 or 8081)/result/e95064c3-a5e6-43a5-9fe9-34f54e8de6cc'
 ```
 
 If task was not found:
