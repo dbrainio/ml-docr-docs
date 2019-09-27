@@ -35,6 +35,7 @@ But if you want to get full power of our solutions just try **latest** version.
 
 List of docs for stable versions:
 * [latest](https://github.com/dbrainio/ml-docr-docs/tree/latest)
+* [v3.0.5](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.5)
 * [v3.0.4](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.4)
 * [v3.0.3](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.3)
 * [v3.0.2](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.2)
@@ -46,16 +47,16 @@ List of docs for stable versions:
 ### Cloud API version
 
 Cloud version is available using following URIs:
-* https://classification.latest.dbrain.io
-* https://recognition.latest.dbrain.io
+* https://classification.latest.dbrain.io (instead of http://127.0.0.1:8080)
+* https://recognition.latest.dbrain.io (instead of http://127.0.0.1:8081)
 
 The only difference in usage of cloud version vs docker image version is that
 you have to add authorization header to each request. Like this:
 ```bash
-curl -siX "POST" "https://classification.latest.dbrain.io/predict" \
--H 'Authorization: Token <API_TOKEN>' \
--H 'Content-Type: multipart/form-data; charset=utf-8' \
--H 'Accept: multipart/form-data' \
+curl -siX POST "https://classification.latest.dbrain.io/predict" \
+-H "Authorization: Token <API_TOKEN>" \
+-H "Content-Type: multipart/form-data; charset=utf-8" \
+-H "Accept: multipart/form-data" \
 -F "image=@document.jpg"
 ```
 
@@ -200,14 +201,14 @@ CROP_CLASSIFIER_HOST=http://crop_classifier:8080
 ```bash
 $  docker-compose up -d \
     --force-recreate --build \
-    --scale classifier=2 \
-    --scale multidocnet=2 \
-    --scale heuristics=4 \
-    --scale ocr=2 \
+    --scale classifier=1 \
+    --scale multidocnet=1 \
+    --scale heuristics=1 \
+    --scale ocr=1 \
     --scale fieldnet=1 \
     --scale crop_classifier=1 \
     --scale classification=1 \
-    --scale recognition=8
+    --scale recognition=1
 ```
 
 ---
@@ -709,7 +710,7 @@ Server: Python/3.6 aiohttp/4.0.0a0
 * To check result run this:
 ```bash
 $ curl -si -H 'Accept: (application/json OR multipart/form-data)'\
-    'http://127.0.0.1:(8080 or 8081)/result/e95064c3-a5e6-43a5-9fe9-34f54e8de6cc'
+    'http://127.0.0.1:(8080 OR 8081)/result/e95064c3-a5e6-43a5-9fe9-34f54e8de6cc'
 ```
 
 If task was not found:
@@ -755,10 +756,9 @@ If task was found & done, response is like regular response of sync version.
 <table>
 <thead><tr><th>Document type</th><th>Fields</th></tr></thead>
 <tbody>
-    <tr><td rowspan=5>bank_card</td><td>month</td></tr>
-        <tr><td>name</td></tr>
+    <tr><td rowspan=4>bank_card</td><td>cardholder_name</td></tr>
+        <tr><td>month</td></tr>
         <tr><td>number</td></tr>
-        <tr><td>surname</td></tr>
         <tr><td>year</td></tr>
     <tr><td rowspan=7>driver_license_card_front</td><td>date_of_birth</td></tr>
         <tr><td>date_of_issue</td></tr>
@@ -767,20 +767,28 @@ If task was found & done, response is like regular response of sync version.
         <tr><td>surname</td></tr>
         <tr><td>third_name</td></tr>
         <tr><td>valid_before</td></tr>
-    <tr><td rowspan=7>driver_license_plastic_new_front</td><td>date_of_birth</td></tr>
-        <tr><td>date_of_issue</td></tr>
-        <tr><td>name</td></tr>
-        <tr><td>series_number</td></tr>
-        <tr><td>surname</td></tr>
-        <tr><td>third_name</td></tr>
-        <tr><td>valid_before</td></tr>
-    <tr><td rowspan=7>driver_license_plastic_old_front</td><td>date_of_birth</td></tr>
-        <tr><td>date_of_issue</td></tr>
-        <tr><td>name</td></tr>
-        <tr><td>series_number</td></tr>
-        <tr><td>surname</td></tr>
-        <tr><td>third_name</td></tr>
-        <tr><td>valid_before</td></tr>
+    <tr><td rowspan=10>driver_license_plastic_new_front</td><td>field_date_end</td></tr>
+        <tr><td>field_date_from</td></tr>
+        <tr><td>field_date_of_birth</td></tr>
+        <tr><td>field_issuer</td></tr>
+        <tr><td>field_name</td></tr>
+        <tr><td>field_number</td></tr>
+        <tr><td>field_patronymic</td></tr>
+        <tr><td>field_place_of_birth</td></tr>
+        <tr><td>field_place_of_issue</td></tr>
+        <tr><td>field_surname</td></tr>
+    <tr><td rowspan=12>driver_license_plastic_old_front</td><td>field_date_end</td></tr>
+        <tr><td>field_date_from</td></tr>
+        <tr><td>field_date_of_birth</td></tr>
+        <tr><td>field_doc_number</td></tr>
+        <tr><td>field_doc_series</td></tr>
+        <tr><td>field_issuer</td></tr>
+        <tr><td>field_name</td></tr>
+        <tr><td>field_patronymic</td></tr>
+        <tr><td>field_place_of_birth</td></tr>
+        <tr><td>field_place_of_issue</td></tr>
+        <tr><td>field_special</td></tr>
+        <tr><td>field_surname</td></tr>
     <tr><td rowspan=6>inn_person</td><td>date</td></tr>
         <tr><td>fio</td></tr>
         <tr><td>inn</td></tr>
@@ -843,6 +851,29 @@ If task was found & done, response is like regular response of sync version.
         <tr><td>number</td></tr>
         <tr><td>sex</td></tr>
         <tr><td>surname</td></tr>
+    <tr><td rowspan=4>pts_back</td><td>address</td></tr>
+        <tr><td>date</td></tr>
+        <tr><td>name</td></tr>
+        <tr><td>special_marks</td></tr>
+    <tr><td rowspan=19>pts_front</td><td>1</td></tr>
+        <tr><td>10</td></tr>
+        <tr><td>11</td></tr>
+        <tr><td>14</td></tr>
+        <tr><td>15</td></tr>
+        <tr><td>18</td></tr>
+        <tr><td>2</td></tr>
+        <tr><td>3</td></tr>
+        <tr><td>4</td></tr>
+        <tr><td>5</td></tr>
+        <tr><td>6</td></tr>
+        <tr><td>7</td></tr>
+        <tr><td>8</td></tr>
+        <tr><td>9</td></tr>
+        <tr><td>address</td></tr>
+        <tr><td>date_of_issue</td></tr>
+        <tr><td>doc_number</td></tr>
+        <tr><td>issuer</td></tr>
+        <tr><td>special_marks</td></tr>
     <tr><td rowspan=12>snils_front</td><td>day_of_birth</td></tr>
         <tr><td>day_of_issue</td></tr>
         <tr><td>month_of_birth</td></tr>
@@ -925,8 +956,6 @@ If task was found & done, response is like regular response of sync version.
     <tr><td>tjk_passport_other</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>passport_uzbek_main_page</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>passport_zero_page</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>pts_back</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>pts_front</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>registration_certificate</td><td style="color: lightgrey;">not supported</td></tr>
     <tr><td>snils_back</td><td style="color: lightgrey;">not supported</td></tr>
 </tbody>
