@@ -47,13 +47,13 @@ List of docs for stable versions:
 ### Cloud API version
 
 Cloud version is available using following URIs:
-* https://classification.latest.dbrain.io (instead of http://127.0.0.1:8080)
-* https://recognition.latest.dbrain.io (instead of http://127.0.0.1:8081)
+* https://classification.v3-0-5.dbrain.io (instead of http://127.0.0.1:8080)
+* https://recognition.v3-0-5.dbrain.io (instead of http://127.0.0.1:8081)
 
 The only difference in usage of cloud version vs docker image version is that
 you have to add authorization header to each request. Like this:
 ```bash
-curl -siX POST "https://classification.latest.dbrain.io/predict" \
+curl -siX POST "https://classification.v3-0-5.dbrain.io/predict" \
 -H "Authorization: Token <API_TOKEN>" \
 -H "Content-Type: multipart/form-data; charset=utf-8" \
 -H "Accept: multipart/form-data" \
@@ -180,7 +180,7 @@ services:
 ```
 * Then create **.env** file with version, license & GPU usage info:
 ```.env
-VERSION=latest
+VERSION=v3.0.5
 LICENSE=...
 CUDA_VISIBLE_DEVICES=...
 BATCH_SIZE=4
