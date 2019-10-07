@@ -3,11 +3,10 @@
 1. [Documentation](#documentation)
 1. [Cloud API version](#cloud-api-version)
 1. [Installation](#installation)
-1. [Services](#services)
 1. [Healthcheck](#healthcheck)
+1. [General information](#general-information)
 1. [Classification](#classification)
 1. [Recognition](#recognition)
-1. [Classification + Recognition](#classification--recognition)
 1. [Async version](#async-version)
 1. [Document types & fields](#document-types--fields)
 
@@ -15,25 +14,25 @@
 
 ### Versioning
 
-Versioning system is quite simple:
-* Cloud API & Docker flavors of our product provide identical services for 
-identical versions.
-* Stable versions are labeled like this: v**X**.**Y**.**Z**, where **X** is 
-major version, **Y** is minor version and **Z** is hotfix/enhacement version.
-* Also there is special **latest** version - it can be very unstable, but 
-includes all fresh enhancements & bugfixes. This version is halfway from one 
-stable version to next stable one.
-
-The most reasonable approach is to use any stable version of product, 
-periodically making migration to newer versions.
-
-But if you want to get full power of our solutions just try **latest** version. 
+* v**X**.**Y**.**Z** (for instance, v3.0.5)
+  * The most stable versions.
+  * **X** is a major version.
+  * **Y** is a minor version.
+  * **Z** is a patch version.
+  * <span style="color:red">**Be careful!**</span> Backward compatibility between major versions is not guaranteed!
+  * **Use in production.**
+* **latest**
+  * The most fresh & functional one, but can be unstable.
+  * **Use it during integration period.**
+* **experimental**
+  * Includes all experimental features, absolutely unstable.
+  * **Don't use it!**
 
 ---
 
 ### Documentation
 
-List of docs for stable versions:
+* [experimental](https://github.com/dbrainio/ml-docr-docs/tree/experimental)
 * [latest](https://github.com/dbrainio/ml-docr-docs/tree/latest)
 * [v3.0.5](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.5)
 * [v3.0.4](https://github.com/dbrainio/ml-docr-docs/tree/v3.0.4)
@@ -46,708 +45,347 @@ List of docs for stable versions:
 
 ### Cloud API version
 
-Cloud version is available using following URIs:
-* https://classification.latest.dbrain.io (instead of http://127.0.0.1:8080)
-* https://recognition.latest.dbrain.io (instead of http://127.0.0.1:8081)
-
-The only difference in usage of cloud version vs docker image version is that
-you have to add authorization header to each request. Like this:
-```bash
-curl -siX POST "https://classification.latest.dbrain.io/predict" \
--H "Authorization: Token <API_TOKEN>" \
--H "Content-Type: multipart/form-data; charset=utf-8" \
--H "Accept: multipart/form-data" \
--F "image=@document.jpg"
-```
-
-[Contact us](https://docr.dbrain.io/) if you want to get API token.
+* Web demo: https://experimental.dbrain.io
+* Endpoints documentation: https://experimental.dbrain.io/docs
+* Don't forget pass **Token** like this:
+	```bash
+	# token in header
+	$ curl -siX POST \
+		-H "Token: <API_TOKEN>" \
+		-F "image=@document.jpg" \
+		"https://experimental.dbrain.io/classify"
+	
+	# token in query params
+	$ curl -siX POST \
+		-F "image=@document.jpg" \
+		"https://experimental.dbrain.io/classify?token=<API_TOKEN>"
+	```
+* [Contact us](https://docr.dbrain.io/) if you want to get API token.
 
 ---
 
 ### Installation
 
 * Create **docker-compose.yml** file first:
+
 ```yamlex
 version: "3"
 services:
+  queue:
+    image: rabbitmq:3.7-management-alpine
+
+  redis:
+    image: redis:5-alpine
+
   api:
     image: dbrainbinaries/docr:$VERSION
-    depends_on:
-      - classification
-      - recognition
-      - web
-    entrypoint: haproxy -f /etc/haproxy/haproxy.cfg -d
+    env_file: &env .env
+    environment:
+      SERVICE: api
     ports:
-      - ${CLF_PORT:-8080}:8080
-      - ${REC_PORT:-8081}:8081
-      - ${WEB_PORT:-8082}:8082
-      
-  web:
-    image: dbrainbinaries/docr:$VERSION
-    environment:
-      SERVICE: web
-      USERNAME: admin
-      PASSWORD: Some_Passw0rd
-      CLASSIFICATION_HOST: "$CLASSIFICATION_HOST"
-      CLASSIFICATION_PASSPHRASE:
-      RECOGNITION_HOST: "$RECOGNITION_HOST"
-      RECOGNITION_PASSPHRASE:
-      DATA: /data
-    depends_on:
-      - classification
-      - recognition
+      - ${API_PORT:-8080}:${API_PORT:-8080}
 
-  classification:
+  client:
     image: dbrainbinaries/docr:$VERSION
+    env_file: *env
     environment:
-      LICENSE: $LICENSE
-      SERVICE: classification
-      MULTIDOCNET_HOST: "$MULTIDOCNET_HOST"
-      CLASSIFIER_HOST: "$CLASSIFIER_HOST"
-      FIELDNET_HOST: "$FIELDNET_HOST"
-      OCR_HOST: "$OCR_HOST"
-      HEURISTICS_HOST: "$HEURISTICS_HOST"
-      BATCH_SIZE: 1
-    depends_on:
-      - classifier
-      - multidocnet
-      - ocr
-      - heuristics
-
-  recognition:
-    image: dbrainbinaries/docr:$VERSION
-    environment:
-      LICENSE: $LICENSE
-      SERVICE: recognition
-      MULTIDOCNET_HOST: "$MULTIDOCNET_HOST"
-      CLASSIFIER_HOST: "$CLASSIFIER_HOST"
-      FIELDNET_HOST: "$FIELDNET_HOST"
-      OCR_HOST: "$OCR_HOST"
-      HEURISTICS_HOST: "$HEURISTICS_HOST"
-      BATCH_SIZE: 1
-    depends_on:
-      - multidocnet
-      - ocr
-      - heuristics
-      - fieldnet
+      SERVICE: client
 
   classifier:
     image: dbrainbinaries/docr:$VERSION
+    env_file: *env
     environment:
-      LICENSE: $LICENSE
-      CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: classifier
-      BATCH_SIZE: $BATCH_SIZE
 
   multidocnet:
     image: dbrainbinaries/docr:$VERSION
+    env_file: *env
     environment:
-      LICENSE: $LICENSE
-      CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: multidocnet
-      BATCH_SIZE: $BATCH_SIZE
 
   heuristics:
     image: dbrainbinaries/docr:$VERSION
+    env_file: *env
     environment:
-      LICENSE: $LICENSE
       SERVICE: heuristics
-      BATCH_SIZE: 1
 
   ocr:
     image: dbrainbinaries/docr:$VERSION
+    env_file: *env
     environment:
-      LICENSE: $LICENSE
-      CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: ocr
-      BATCH_SIZE: $BATCH_SIZE
 
   fieldnet:
     image: dbrainbinaries/docr:$VERSION
+    env_file: *env
     environment:
-      LICENSE: $LICENSE
-      CUDA_VISIBLE_DEVICES: "$CUDA_VISIBLE_DEVICES"
       SERVICE: fieldnet
-      BATCH_SIZE: $BATCH_SIZE
 
   crop_classifier:
     image: dbrainbinaries/docr:$VERSION
+    env_file: *env
     environment:
-      LICENSE: $LICENSE
-      CUDA_VISIBLE_DEVICES: ""
       SERVICE: crop_classifier
-      BATCH_SIZE: 1
 ```
-* Then create **.env** file with version, license & GPU usage info:
-```.env
-VERSION=latest
-LICENSE=...
-CUDA_VISIBLE_DEVICES=...
-BATCH_SIZE=4
 
-CLASSIFICATION_HOST=http://classification:8080
-RECOGNITION_HOST=http://recognition:8080
-MULTIDOCNET_HOST=http://multidocnet:8080
-CLASSIFIER_HOST=http://classifier:8080
-FIELDNET_HOST=http://fieldnet:8080
-OCR_HOST=http://ocr:8080
-HEURISTICS_HOST=http://heuristics:8080
-CROP_CLASSIFIER_HOST=http://crop_classifier:8080
+* Then create **.env** file with settings:
+
+```.env
+# common
+VERSION=experimental
+LOG_LEVEL=ERROR
+
+# cuda
+CUDA_VISIBLE_DEVICES=...
+
+# license
+LICENSE=...
+
+# redis
+REDIS_URL=redis://redis
+
+# queue
+QUEUE_URL=amqp://guest:guest@queue
+
+# api
+API_HOST=0.0.0.0
+API_PORT=8080
+TASKS_LIFETIME=86400
+
+# classifier
+CLASSIFIER_BATCH_SIZE=4
+
+# fieldnet
+FIELDNET_BATCH_SIZE=4
+
+# multidocnet
+MULTIDOCNET_BATCH_SIZE=4
 ```
+
 * Possible values for VERSION variable: https://hub.docker.com/r/dbrainbinaries/docr/tags
 * If want to run on CPU, leave CUDA_VISIBLE_DEVICES blank
 * If want to run on GPU, try CUDA_VISIBLE_DEVICES=0 for example
 * Then run services like this:
-```bash
-$  docker-compose up -d \
-    --force-recreate --build \
-    --scale classifier=1 \
-    --scale multidocnet=1 \
-    --scale heuristics=1 \
-    --scale ocr=1 \
-    --scale fieldnet=1 \
-    --scale crop_classifier=1 \
-    --scale classification=1 \
-    --scale recognition=1
-```
-
----
-
-### Services
-
-There are few types of services:
-* **web**
-  * optional web-demo
-* **recognition**
-  * main recognition endpoint
-  * requires ~0.5Gb RAM
-* **classification**
-  * main classification endpoint
-  * requires ~0.5Gb RAM
-* **classifier**
-  * requires ~1Gb RAM
-  * requires ~1Gb GPU
-* **multidocnet**
-  * requires ~1Gb RAM
-  * requires ~1Gb GPU
-* **ocr**
-  * requires ~1.5Gb RAM
-  * requires ~1.5Gb GPU
-* **heuristics**
-  * requires ~0.5Gb RAM
-* **fieldnet**
-  * many subtypes inside
-  * each subtype requires ~1Gb RAM
-  * each subtype requires ~1Gb GPU
-
-Note, all of these requirements are peak values, not average ones.
+	```bash
+	$ docker-compose up -d --force-recreate --build \
+		--scale classifier=1 \
+		--scale multidocnet=1 \
+		--scale heuristics=1 \
+		--scale ocr=1 \
+		--scale fieldnet=1 \
+		--scale crop_classifier=1 \
+		--scale client=1
+	```
 
 ---
 
 ### Healthcheck
 
-* Each service has following healthcheck endpoint:
-
-```bash
-$ curl -si 'http://127.0.0.1:8080/healthcheck'
-$ curl -si 'http://127.0.0.1:8081/healthcheck'
-```
-
+* Run command:
+	```bash
+	# docker version
+	$ curl -si "http://127.0.0.1:8080/healthcheck"
+	
+	# cloud version
+	$ curl -si "https://experimental.dbrain.io/healthcheck"
+	```
 * If **OK**:
- 
-```text
-HTTP/1.1 204 No Content
-Content-Length: 0
-Content-Type: application/octet-stream
-Date: Tue, 30 Jul 2019 11:01:43 GMT
-Server: Python/3.6 aiohttp/3.5.4
-```
+	```text
+	HTTP/2 200 
+	content-type: application/json
+	date: Mon, 07 Oct 2019 17:40:16 GMT
+	server: uvicorn
+	content-length: 16
+	
+	{"success":true}
+	```
+
+---
+
+### General information
+
+* Multiple documents on single image are supported
+* Supported image formats:
+  * JPEG
+  * PNG
+  * TIFF
+  * BMP
+  * GIF
+  * PDF
+* Unicode characters in JSON are encoded as UTF-8
+* General response structure:
+	```json
+	{
+		"detail": [...],
+		"items": [...],  // optional field
+		"task_id": {string|null}  // optional field
+	}
+	```
+* Successful response:
+	```text
+	HTTP/2 200
+	content-type: application/json
+	date: Mon, 07 Oct 2019 17:46:06 GMT
+	server: uvicorn
+	content-length: 66
+	
+	{"detail":[],items:[...],task_id:null}
+	```
+* Response if license is not valid:
+	```text
+	HTTP/2 403
+	content-type: application/json
+	date: Mon, 07 Oct 2019 17:46:06 GMT
+	server: uvicorn
+	content-length: 66
+	
+	{"detail":[{"msg":"License is not valid","type":"license_error"}]}
+	```
+* Response if input params are not valid:
+	```text
+	HTTP/2 422 Unprocessable Entity
+	date: Mon, 07 Oct 2019 17:59:32 GMT
+	server: uvicorn
+	content-length: 231
+	content-type: application/json
+	
+	{"detail":[{"loc":[...],"msg":"...","type":"...","ctx":{...}}]}
+	```
+* If program error occured:
+	```text
+	HTTP/2 500
+	content-type: application/json
+	date: Mon, 07 Oct 2019 17:41:36 GMT
+	server: uvicorn
+	content-length: 4142
+	
+	{"detail":[{"msg":"...","type":"..."}]}
+	```
 
 ---
 
 ### Classification:
 
-* Run this to classify document:
-
-```bash
-$ curl -siX 'POST' \
-    'http://127.0.0.1:8080/predict' \
-    -H 'Content-Type: multipart/form-data; charset=utf-8' \
-    -H 'Accept: multipart/form-data' \
-    -F 'image=@document.jpg'
-```
-
-* Multiple documents on single image are supported
-* Supported formats of image:
-  * JPEG
-  * PNG
-  * TIFF
-  * PDF
-
+* Run command:
+	```bash
+	# docker version
+	$ curl -siX POST \
+		-F "image=@document.jpg" \
+		"http://127.0.0.1:8080/classify"
+	
+	# cloud version
+	$ curl -siX POST \
+		-F "image=@document.jpg" \
+		"https://experimental.dbrain.io/classify"
+	```
 * If **OK**:
-
-```text
-HTTP/1.1 200 OK
-Content-Type: multipart/form-data;boundary=9b25e3de042e415ba384ba7f30b2185d
-Transfer-Encoding: chunked
-Date: Tue, 30 Jul 2019 11:32:40 GMT
-Server: Python/3.6 aiohttp/3.5.4
-
---9b25e3de042e415ba384ba7f30b2185d
-Content-Type: image/jpg
-Content-Disposition: form-data; name="image-0"; filename="c2b1e58c-0622-40db-9a54-490a88adcfa2.jpg"
-Content-Length: 258109
-
-<CROPPED_DOCUMENT_IMAGE_BINARY_DATA>
---9b25e3de042e415ba384ba7f30b2185d
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: form-data; name="text-0"
-Content-Length: 15
-
-{"type": "passport_main", "rotation": 1}
---9b25e3de042e415ba384ba7f30b2185d--
-
-... MULTIPLE DOCUMENTS COULD BE FOUND ...
-
-```
-
-* Also **application/json** is allowed:
-
-```bash
-$ curl -siX 'POST' \
-    'http://127.0.0.1:8080/predict' \
-    -H 'Content-Type: multipart/form-data; charset=utf-8' \
-    -H 'Accept: application/json' \
-    -F 'image=@document.jpg'
-```
-
-* If **OK**:
-
-```text
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Content-Length: 344397
-Date: Thu, 01 Aug 2019 08:26:26 GMT
-Server: Python/3.6 aiohttp/3.5.4
-
-[
-	{
-		"crop": "data:image/jpg;base64,...",
-		"document": {
-			"type": "passport_main",
-			"rotation": 1
-		}
-	},
-	...
-]
-```
-
-* Unicode characters in JSON are encoded as UTF-8
+	```text
+	HTTP/2 200
+	content-type: application/json
+	date: Mon, 07 Oct 2019 17:33:37 GMT
+	server: uvicorn
+	content-length: 485833
+	
+	{"detail":[],"items":[{"document":{"type":"passport_main","rotation":1},"crop":"data:image/jpg;base64,..."}],"task_id":null}
+	```
 
 ---
 
 ### Recognition:
 
-* Run this to recognize document (use each document from classification step separately):
-
-```bash
-$ curl -siX 'POST' \
-    'http://127.0.0.1:8081/predict' \
-    -H 'Content-Type: multipart/form-data; charset=utf-8' \
-    -H 'Accept: multipart/form-data' \
-    -F 'image=@cropped_document_image_from_classification_step.jpg' \
-    -F 'text=<DOCUMENT_TYPE_FROM_CLASSIFICATION_STEP>'
-```
-
-* Only single document on image is supported
-* Supported formats of image:
-  * JPEG
-  * PNG
-  * TIFF
-  * PDF
-
+* Run command:
+	```bash
+	# docker version
+	$ curl -siX POST \
+		-F "image=@document.jpg" \
+		"http://127.0.0.1:8080/recognize?doc_type=passport_main"
+	
+	# cloud version
+	$ curl -siX POST \
+		-F "image=@document.jpg" \
+		"https://experimental.dbrain.io/recognize?doc_type=passport_main"
+	```
+* Use **doc_type=...** get parameter multiple times for each doc type you are going to recognize on image 
 * If **OK**:
-
-```text
-HTTP/1.1 200 OK
-Content-Type: multipart/form-data;boundary=48612ba3cf8144fb835aeb033f14bbd8
-Transfer-Encoding: chunked
-Date: Tue, 30 Jul 2019 11:41:27 GMT
-Server: Python/3.6 aiohttp/3.5.4
-
---48612ba3cf8144fb835aeb033f14bbd8
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: form-data; name="text"
-Content-Length: 1254
-
-{
-  "doc_type": "passport_main",
-  "fields": {
-    "date_of_birth": {
-      "text": "18.03.1994",
-      "confidence": 0.744497537612915
-    },
-    "date_of_issue": {
-      "text": "14.01.2015",
-      "confidence": 0.803318440914154
-    },
-    "first_name": {
-      "text": "ВЯЧЕСЛАВ",
-      "confidence": 0.9858060479164124
-    },
-    "issuing_authority": {
-      "text": "ОТДЕЛОМ №2 УФМС РОССИИ ПО ***",
-      "confidence": 0.9618614315986633
-    },
-    "other_names": {
-      "text": "ЕВГЕНЬЕВИЧ",
-      "confidence": 0.9819983243942261
-    },
-    "place_of_birth": {
-      "text": "УСТЬ-ТАРКСКОГО С. УСТЬ-ТАРКА Р-НА НСВОСИБИРСКОЙ ОБЛ.",
-      "confidence": 0.0
-    },
-    "series_and_number": {
-      "text": "52** 40****",
-      "confidence": 0.9477027654647827
-    },
-    "sex": {
-      "text": "МУЖ.",
-      "confidence": 0.6627151370048523
-    },
-    "subdivision_code": {
-      "text": "550-***",
-      "confidence": 0.9262790083885193
-    },
-    "surname": {
-      "text": "П***",
-      "confidence": 0.9620369076728821
-    }
-  }
-}
---48612ba3cf8144fb835aeb033f14bbd8--
-```
-
-* Also **application/json** is allowed:
-
-```bash
-$ curl -siX 'POST' \
-    'http://127.0.0.1:8081/predict' \
-    -H 'Content-Type: multipart/form-data; charset=utf-8' \
-    -H 'Accept: application/json' \
-    -F 'image=@cropped_document_image_from_classification_step.jpg' \
-    -F 'text=<DOCUMENT_TYPE_FROM_CLASSIFICATION_STEP>'
-```
-
-* If **OK**:
-
-```text
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Content-Length: 1846
-Date: Thu, 01 Aug 2019 08:49:02 GMT
-Server: Python/3.6 aiohttp/3.5.4
-
-{
-	"doc_type": "passport_main",
-	"fields": {
-		"date_of_birth": {
-			"text": "18.03.1994",
-			"confidence": 0.7444975972175598
-		},
-		"date_of_issue": {
-			"text": "14.01.2015",
-			"confidence": 0.803318202495575
-		},
-		"first_name": {
-			"text": "В***",
-			"confidence": 0.9858060479164124
-		},
-		"issuing_authority": {
-			"text": "ОТДЕЛОМ ***",
-			"confidence": 0.9618613123893738
-		},
-		"other_names": {
-			"text": "Е***",
-			"confidence": 0.9819983243942261
-		},
-		"place_of_birth": {
-			"text": "УСТЬ-ТАРКСКОГО ***",
-			"confidence": 0.0
-		},
-		"series_and_number": {
-			"text": "5*** 408***",
-			"confidence": 0.9477028846740723
-		},
-		"sex": {
-			"text": "МУЖ.",
-			"confidence": 0.6627146005630493
-		},
-		"subdivision_code": {
-			"text": "550-***",
-			"confidence": 0.9262792468070984
-		},
-		"surname": {
-			"text": "П***",
-			"confidence": 0.9620369076728821
-		}
-	}
-}
-```
-
-* Here ranges for **confidence**:
+	```text
+	HTTP/2 200
+	date: Mon, 07 Oct 2019 22:59:59 GMT
+	server: uvicorn
+	content-length: 1565
+	content-type: application/json
+	
+	{"detail":[],"items":[{"doc_type":"...","fields":{"...":{"text":"...","confidence":0.123},...}},...],"task_id":null}
+	```
+* Meaning of **confidence**:
   * [0.0, 0.4) - absolutely not sure
   * [0.4, 0.6] - "gray" zone
   * (0.6, 1.0] - pretty sure
-
-* Unicode characters in JSON are encoded as UTF-8
-
----
-
-### Classification + Recognition:
-
-If you want to classify & recognize documents on image in single request, read this section.
-
-* Run this to classify & recognize documents on image:
-
-```bash
-$ curl -siX 'POST' \
-    'http://127.0.0.1:8081/predict/classify/recognize' \
-    -H 'Content-Type: multipart/form-data; charset=utf-8' \
-    -H 'Accept: multipart/form-data' \
-    -F 'image=@document.jpg' \
-    -F 'text=<ALLOWED_DOCUMENT_TYPES>'
-```
-
-* Multiple documents on image are supported
-* Supported formats of image:
-  * JPEG
-  * PNG
-  * TIFF
-  * PDF
-* Example of **text** field: text=passport_main,inn_person
-* If **OK**:
-
-```text
-HTTP/1.1 200 OK
-Content-Type: multipart/form-data;boundary=48612ba3cf8144fb835aeb033f14bbd8
-Transfer-Encoding: chunked
-Date: Tue, 30 Jul 2019 11:41:27 GMT
-Server: Python/3.6 aiohttp/3.5.4
-
---48612ba3cf8144fb835aeb033f14bbd8
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: form-data; name="text"
-Content-Length: 1254
-
-{
-  "doc_type": "passport_main",
-  "fields": {
-    "date_of_birth": {
-      "text": "18.03.1994",
-      "confidence": 0.744497537612915
-    },
-    "date_of_issue": {
-      "text": "14.01.2015",
-      "confidence": 0.803318440914154
-    },
-    "first_name": {
-      "text": "ВЯЧЕСЛАВ",
-      "confidence": 0.9858060479164124
-    },
-    "issuing_authority": {
-      "text": "ОТДЕЛОМ №2 УФМС РОССИИ ПО ***",
-      "confidence": 0.9618614315986633
-    },
-    "other_names": {
-      "text": "ЕВГЕНЬЕВИЧ",
-      "confidence": 0.9819983243942261
-    },
-    "place_of_birth": {
-      "text": "УСТЬ-ТАРКСКОГО С. УСТЬ-ТАРКА Р-НА НСВОСИБИРСКОЙ ОБЛ.",
-      "confidence": 0.0
-    },
-    "series_and_number": {
-      "text": "52** 40****",
-      "confidence": 0.9477027654647827
-    },
-    "sex": {
-      "text": "МУЖ.",
-      "confidence": 0.6627151370048523
-    },
-    "subdivision_code": {
-      "text": "550-***",
-      "confidence": 0.9262790083885193
-    },
-    "surname": {
-      "text": "П***",
-      "confidence": 0.9620369076728821
-    }
-  }
-}
---48612ba3cf8144fb835aeb033f14bbd8--
-```
-
-* Also **application/json** is allowed:
-
-```bash
-$ curl -siX 'POST' \
-    'http://127.0.0.1:8081/predict/classify/recognize' \
-    -H 'Content-Type: multipart/form-data; charset=utf-8' \
-    -H 'Accept: application/json' \
-    -F 'image=@document.jpg' \
-    -F 'text=<ALLOWED_DOCUMENT_TYPES>'
-```
-
-* If **OK**:
-
-```text
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Content-Length: 1846
-Date: Thu, 01 Aug 2019 08:49:02 GMT
-Server: Python/3.6 aiohttp/3.5.4
-
-{
-	"doc_type": "passport_main",
-	"fields": {
-		"date_of_birth": {
-			"text": "18.03.1994",
-			"confidence": 0.7444975972175598
-		},
-		"date_of_issue": {
-			"text": "14.01.2015",
-			"confidence": 0.803318202495575
-		},
-		"first_name": {
-			"text": "В***",
-			"confidence": 0.9858060479164124
-		},
-		"issuing_authority": {
-			"text": "ОТДЕЛОМ ***",
-			"confidence": 0.9618613123893738
-		},
-		"other_names": {
-			"text": "Е***",
-			"confidence": 0.9819983243942261
-		},
-		"place_of_birth": {
-			"text": "УСТЬ-ТАРКСКОГО ***",
-			"confidence": 0.0
-		},
-		"series_and_number": {
-			"text": "5*** 408***",
-			"confidence": 0.9477028846740723
-		},
-		"sex": {
-			"text": "МУЖ.",
-			"confidence": 0.6627146005630493
-		},
-		"subdivision_code": {
-			"text": "550-***",
-			"confidence": 0.9262792468070984
-		},
-		"surname": {
-			"text": "П***",
-			"confidence": 0.9620369076728821
-		}
-	}
-}
-```
-
-* Here ranges for **confidence**:
-  * [0.0, 0.4) - absolutely not sure
-  * [0.4, 0.6] - "gray" zone
-  * (0.6, 1.0] - pretty sure
-
-* Unicode characters in JSON are encoded as UTF-8
 
 ---
 
 ### Async version:
 
-* Run this for **classification**:
-```bash
-$ curl -siX 'POST' \
-    'http://127.0.0.1:8080/predict?async=true' \
-    -H 'Content-Type: multipart/form-data; charset=utf-8' \
-    -H 'Accept: (application/json OR multipart/form-data)' \
-    -F 'image=@document.jpg'
-```
-* Run this for **recognition**:
-```bash
-$ curl -siX 'POST' \
-    'http://127.0.0.1:8081/predict?async=true' \
-    -H 'Content-Type: multipart/form-data; charset=utf-8' \
-    -H 'Accept: (application/json OR multipart/form-data)' \
-    -F 'image=@document.jpg'
-    -F 'text=<DOCUMENT_TYPE>'
-```
-* Run this for **classification + recognition**:
-```bash
-$ curl -siX 'POST' \
-    'http://127.0.0.1:8081/predict/classify/recognize?async=true' \
-    -H 'Content-Type: multipart/form-data; charset=utf-8' \
-    -H 'Accept: (application/json OR multipart/form-data)' \
-    -F 'image=@document.jpg'
-    -F 'text=<ALLOWED_DOCUMENT_TYPES>'
-```
+* Just add **async=true** get parameter to request:
+	```bash
+	# classification, docker version
+	$ curl -siX POST \
+		-F "image=@document.jpg" \
+		"http://127.0.0.1:8080/classify?async=true"
+	
+	# classification, cloud version
+	$ curl -siX POST \
+		-F "image=@document.jpg" \
+		"https://experimental.dbrain.io/classify?async=true"
 
-Example of response:
-
-```
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Content-Length: 57
-Date: Fri, 24 May 2019 17:50:50 GMT
-Server: Python/3.6 aiohttp/4.0.0a0
-
-{
-    "task_id": "e95064c3-a5e6-43a5-9fe9-34f54e8de6cc"
-}
-```
-
-* To check result run this:
-```bash
-$ curl -si -H 'Accept: (application/json OR multipart/form-data)'\
-    'http://127.0.0.1:(8080 OR 8081)/result/e95064c3-a5e6-43a5-9fe9-34f54e8de6cc'
-```
-
-If task was not found:
-
-```
-HTTP/1.1 404 Not Found
-Content-Type: application/json; charset=utf-8
-Content-Length: 97
-Date: Fri, 24 May 2019 18:02:05 GMT
-Server: Python/3.6 aiohttp/4.0.0a0
-
-{
-    "code": 404,
-    "message": "Async task not found",
-    "errno": 8,
-    "traceback": null
-}
-```
-
-If task was found, but it's not done yet:
-
-```
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Content-Length: 96
-Date: Fri, 24 May 2019 17:57:47 GMT
-Server: Python/3.6 aiohttp/4.0.0a0
-
-{
-    "code": 200,
-    "message": "Async task not done",
-    "errno": 9,
-    "traceback": null
-}
-```
-
-If task was found & done, response is like regular response of sync version.
+	# recognition, docker version
+	$ curl -siX POST \
+		-F "image=@document.jpg" \
+		"http://127.0.0.1:8080/recognize?doc_type=passport_main&async=true"
+	
+	# recognition, cloud version
+	$ curl -siX POST \
+		-F "image=@document.jpg" \
+		"https://experimental.dbrain.io/recognize?doc_type=passport_main&async=true"
+	```
+* If **OK**:
+	```text
+	HTTP/2 200
+	date: Mon, 07 Oct 2019 23:34:17 GMT
+	server: uvicorn
+	content-length: 73
+	content-type: application/json
+	
+	{"detail":[],"items":[],"task_id":"a824bd7d-788f-4b42-9f28-5d2d54db178f"}
+	```
+* Check results:
+	```bash
+	# docker version
+	$ curl -si "http://127.0.0.1:8080/result/a824bd7d-788f-4b42-9f28-5d2d54db178f"
+	
+	# cloud version
+	$ curl -si "https://experimental.dbrain.io/result/a824bd7d-788f-4b42-9f28-5d2d54db178f"
+	```
+* If task was not found:
+	```text
+	HTTP/2 404
+	date: Mon, 07 Oct 2019 23:41:41 GMT
+	server: uvicorn
+	content-length: 65
+	content-type: application/json
+	
+	{"detail":[{"msg":"Async task not found","type":"result_error"}]}
+	```
+* If task was found, but it's not done yet:
+	```text
+	HTTP/2 425
+	date: Mon, 07 Oct 2019 23:41:41 GMT
+	server: uvicorn
+	content-length: 64
+	content-type: application/json
+	
+	{"detail":[{"msg":"Async task not done","type":"result_error"}]}
+	```
+* If task was found & done, response is like regular response of sync version.
 
 ---
 
@@ -934,29 +572,29 @@ If task was found & done, response is like regular response of sync version.
         <tr><td>series_top</td></tr>
         <tr><td>type</td></tr>
         <tr><td>vin</td></tr>
-    <tr><td>driver_license_card_back</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>driver_license_plastic_back</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>global_passport</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>inn_organisation</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>insurance_plastic</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>military_id</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>not_document</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>ogrn</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>ogrnip</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>other</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>passport_blank_page</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>passport_children</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>kgz_passport_plastic</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>passport_last_rf</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>passport_main_handwritten</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>passport_marriage</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>passport_military</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>passport_previous_docs</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>passport_registration</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>tjk_passport_other</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>passport_uzbek_main_page</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>passport_zero_page</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>registration_certificate</td><td style="color: lightgrey;">classification only</td></tr>
-    <tr><td>snils_back</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>driver_license_card_back</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>driver_license_plastic_back</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>global_passport</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>inn_organisation</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>insurance_plastic</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>military_id</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>not_document</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>ogrn</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>ogrnip</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>other</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_blank_page</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_children</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>kgz_passport_plastic</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_last_rf</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_main_handwritten</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_marriage</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_military</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_previous_docs</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_registration</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>tjk_passport_other</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_uzbek_main_page</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>passport_zero_page</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>registration_certificate</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>snils_back</td><td style="color: lightgrey;">not supported</td></tr>
 </tbody>
 </table>
