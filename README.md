@@ -15,7 +15,7 @@
 ### Versioning
 
 * v**X**.**Y**.**Z** (for instance, v3.0.5)
-  * The most stable versions.
+  * Stable versions.
   * **X** is a major version.
   * **Y** is a minor version.
   * **Z** is a patch version.
@@ -251,7 +251,7 @@ MULTIDOCNET_BATCH_SIZE=4
 	
 	{"detail":[{"loc":[...],"msg":"...","type":"...","ctx":{...}}]}
 	```
-* If program error occured:
+* If program error occurred:
 	```text
 	HTTP/2 500
 	content-type: application/json
@@ -572,29 +572,29 @@ MULTIDOCNET_BATCH_SIZE=4
         <tr><td>series_top</td></tr>
         <tr><td>type</td></tr>
         <tr><td>vin</td></tr>
-    <tr><td>driver_license_card_back</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>driver_license_plastic_back</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>global_passport</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>inn_organisation</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>insurance_plastic</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>military_id</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>not_document</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>ogrn</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>ogrnip</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>other</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>passport_blank_page</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>passport_children</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>kgz_passport_plastic</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>passport_last_rf</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>passport_main_handwritten</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>passport_marriage</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>passport_military</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>passport_previous_docs</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>passport_registration</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>tjk_passport_other</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>passport_uzbek_main_page</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>passport_zero_page</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>registration_certificate</td><td style="color: lightgrey;">not supported</td></tr>
-    <tr><td>snils_back</td><td style="color: lightgrey;">not supported</td></tr>
+    <tr><td>driver_license_card_back</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>driver_license_plastic_back</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>global_passport</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>inn_organisation</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>insurance_plastic</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>military_id</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>not_document</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>ogrn</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>ogrnip</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>other</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>passport_blank_page</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>passport_children</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>kgz_passport_plastic</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>passport_last_rf</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>passport_main_handwritten</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>passport_marriage</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>passport_military</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>passport_previous_docs</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>passport_registration</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>tjk_passport_other</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>passport_uzbek_main_page</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>passport_zero_page</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>registration_certificate</td><td style="color: lightgrey;">classification only</td></tr>
+    <tr><td>snils_back</td><td style="color: lightgrey;">classification only</td></tr>
 </tbody>
 </table>
